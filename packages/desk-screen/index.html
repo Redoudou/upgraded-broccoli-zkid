@@ -1,25 +1,20 @@
 <!doctype html>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self'; img-src 'self' data:">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self'; img-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'">
 <title>Green Light — desk</title>
-<style>body{font:20px system-ui;margin:2rem;text-align:center}#state{font-size:3rem;padding:2rem;border-radius:1rem}.wait{background:#eee}.green{background:#2ecc71;color:#fff}.red{background:#e74c3c;color:#fff}</style>
-<p id="level"></p>
-<div id="qr"></div>
-<div id="state" class="wait">Waiting</div>
-<script>
-// Level 1: long-poll /result until websocket lands in M2 (test A8).
-async function session() {
-  const s = await (await fetch('/session', { method: 'POST' })).json();
-  document.getElementById('level').textContent = `Level ${s.demo_level}`;
-  document.getElementById('qr').textContent = s.url; // M2: render a real QR from s.url
-  const st = document.getElementById('state'); st.className = 'wait'; st.textContent = 'Waiting';
-  const until = s.expires_at;
-  while (Date.now() < until) {
-    const r = await (await fetch(`/result/${s.nonce}`)).json();
-    if (r.result !== 'waiting') { st.className = r.result; st.textContent = r.result === 'green' ? 'OK' : `No (${r.reason})`; await new Promise(r => setTimeout(r, 3000)); break; }
-    await new Promise(r => setTimeout(r, 500));
-  }
-  session();
-}
-session();
-</script>
+<link rel="stylesheet" href="/desk.css">
+<header><span class="brand">Green Light</span><span id="level" class="level"></span></header>
+<main>
+  <section id="state" class="wait">
+    <h1 id="headline">Connecting…</h1>
+    <p id="detail"></p>
+  </section>
+  <section class="qr">
+    <img id="qr" alt="Scan with your phone" hidden>
+    <p class="hint">Scan to prove you are over 21. Session renews every <span id="ttl">60 s</span>.</p>
+    <p class="link"><a id="link" href="#" target="_blank" rel="noopener"></a></p>
+  </section>
+</main>
+<footer>The desk stores a timestamp and a proof hash. No name, no photo, no license number.</footer>
+<script src="/desk.js"></script>

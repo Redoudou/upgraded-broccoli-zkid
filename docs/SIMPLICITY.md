@@ -7,12 +7,13 @@ Over-engineering is the biggest risk to this program. These rules are hard-coded
 | Thing | Limit | Why |
 |---|---|---|
 | Verify service source | 300 lines | The spec says ~300 lines. Past that, something is being built that the venue does not need. |
-| Verify service runtime dependencies | 2 | Node's standard library covers HTTP, crypto, and JSON. One for QR, one for the longfellow verifier binding. |
+| Verify service runtime dependencies | 2 | Node's standard library covers HTTP, crypto, and JSON. One for QR (`qrcode`, in use), one reserved for a verifier binding; the longfellow verifier turned out to need none (ADR-0008, plain WebAssembly). |
 | Packages under `packages/` | 6 | verify-service, desk-screen, prover-page, trust-list, circuits, and one spare. |
 | Databases | 1 file | One SQLite file or one append-only JSON log with two fields. |
 | Deployment units | 1 compose file | One VM, one `docker compose up`, Caddy for TLS. |
 | Languages in services we own | 1 (JavaScript) | No TypeScript build step, no transpiler. The prover's Rust and C++ come from upstream projects, not us. |
 | Test frameworks | 0 | `node:test` only. Device benchmarks are a script that writes JSON. |
+| Rust we own | 1 crate, ~120 lines | `packages/circuits/longfellow-wasm`: a C-ABI wrapper over upstream longfellow-zk so one `.wasm` serves the page and the service. No circuit code of ours. |
 
 ## Things we do not build
 

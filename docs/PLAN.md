@@ -14,6 +14,10 @@ Over-engineering is the biggest risk. [SIMPLICITY.md](SIMPLICITY.md) hard-codes 
 
 [OPEN-BEFORE-M1.md](OPEN-BEFORE-M1.md) lists the fifteen facts an engineer still lacks before M1 and M2, and where each comes from.
 
+## Where we are (2026-09-02)
+
+A working level 2 prototype exists (README "Test it in five minutes"): real longfellow-zk proof in the browser from a test mDL issued by a test DMV, verified by the service, hash-only storage, Docker image. Against the map below: M0 done; M1 browser feasibility answered (ADR-0001, ADR-0007), device numbers pending; M2 done with SSE instead of a websocket; M3 done except the real wallet hand-off, device wipe tests, and reproducible build on two machines; M4 nonce statement found already in-circuit, membership on the fallback (ADR-0006); M5 synthetic VICAL and root only; M6 flow ready, waits on the phones; M7 Docker image and compose exist and are exercised in CI, no TLS domain or venue yet. CI on GitHub Actions is green since 2026-09-02; the scaffold's workflow files had invalid YAML and had never run. Open facts are in [OPEN-BEFORE-M1.md](OPEN-BEFORE-M1.md); items 1, 2, 3, 4, 12, 13 (element list), 14 are closed by the prototype.
+
 ## Milestone map
 
 | # | Milestone | Weeks | Dates | Owner | Blocks |

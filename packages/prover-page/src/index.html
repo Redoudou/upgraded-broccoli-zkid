@@ -1,7 +1,42 @@
 <!doctype html>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; connect-src 'self'; img-src 'self' data:; style-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <title>Green Light</title>
-<p id="level">Level 1 — flow, proof stubbed</p>
-<main id="app">Waiting for session…</main>
-<script type="module" src="app.js"></script>
+<link rel="stylesheet" href="/prove/style.css">
+<header><span class="brand">Green Light</span><span id="level" class="level">…</span></header>
+<main id="app">
+  <section id="intro" class="card">
+    <h1>Prove you are over 21</h1>
+    <p>The venue learns three facts: <b>over 21</b>, <b>license valid</b>, <b>issued by a trusted DMV</b>. Nothing else leaves your phone.</p>
+    <p id="session" class="muted">Checking session…</p>
+    <button id="go" class="primary" disabled>Share with the venue</button>
+    <p class="muted small">Test credential. A state-issued mDL from Apple or Google Wallet needs a registered relying party and is not wired in yet.</p>
+  </section>
+  <section id="progress" class="card" hidden>
+    <ol id="steps"></ol>
+    <p id="timer" class="muted"></p>
+  </section>
+  <section id="result" class="card" hidden>
+    <h1 id="verdict"></h1>
+    <p id="verdict-detail"></p>
+    <p id="timing" class="muted small"></p>
+  </section>
+</main>
+<div id="sheet" class="sheet" hidden>
+  <div class="sheet-body">
+    <div class="grabber"></div>
+    <p class="sheet-title">Test Wallet</p>
+    <div class="cred">
+      <p class="cred-name">Green Light Test DMV · Driver's License</p>
+      <p class="cred-sub" id="cred-sub"></p>
+    </div>
+    <p class="sheet-h">This venue will learn</p>
+    <ul class="share"><li>Over 21 <span>✓</span></li><li>License currently valid <span>✓</span></li><li>Signed by a DMV on the trust list <span>✓</span></li></ul>
+    <p class="sheet-h">Not shared</p>
+    <p class="muted small">Name, date of birth, address, photo, license number, expiry date. The proof is made on this phone and the license is wiped from the page afterwards.</p>
+    <button id="continue" class="primary">Continue with Face ID (simulated)</button>
+    <button id="cancel" class="secondary">Cancel</button>
+  </div>
+</div>
+<script type="module" src="/prove/app.js"></script>

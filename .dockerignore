@@ -1,0 +1,7 @@
+node_modules
+**/node_modules
+.git
+data
+packages/prover-page/dist
+packages/circuits/longfellow-wasm/target
+fixtures/*.key
