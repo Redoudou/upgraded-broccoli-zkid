@@ -1,0 +1,3 @@
+{ "docType": "org.iso.18013.5.1.mDL", "issuer": "TEST IACA - NOT A REAL ISSUER",
+  "claims": { "age_over_21": true, "expiry_date": "2030-01-01" },
+  "note": "Test credential. Fields deliberately limited to what the circuit proves." }

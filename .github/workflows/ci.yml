@@ -1,0 +1,31 @@
+name: ci
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24 }
+      - run: make setup
+      - run: make fixtures
+      - run: make test
+      - name: PII grep on logs and fixtures policy
+        run: ./scripts/pii-scan.sh
+  reproducible-build:
+    runs-on: ubuntu-latest
+    strategy: { matrix: { run: [a, b] } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24 }
+      - run: cd packages/prover-page && npm install --no-audit --no-fund && npm run build
+      - run: cd packages/prover-page && shasum -a 256 dist/* | tee build-${{ matrix.run }}.sha256
+      - uses: actions/upload-artifact@v4
+        with: { name: build-${{ matrix.run }}, path: packages/prover-page/build-${{ matrix.run }}.sha256 }
+  reproducible-compare:
+    needs: reproducible-build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+      - run: diff build-a/build-a.sha256 build-b/build-b.sha256 && echo "reproducible"

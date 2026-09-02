@@ -1,0 +1,7 @@
+{$DOMAIN:localhost} {
+  handle /session* { reverse_proxy verify:8080 }
+  handle /proof*   { reverse_proxy verify:8080 }
+  handle /result*  { reverse_proxy verify:8080 }
+  handle /prove*   { root * /srv/prove  file_server }
+  handle           { root * /srv/desk   file_server }
+}

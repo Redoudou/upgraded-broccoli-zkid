@@ -1,0 +1,11 @@
+{
+  "name": "@greenlight/trust-list",
+  "version": "0.0.1",
+  "license": "Apache-2.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "node --test \"test/**/*.test.js\"",
+    "build-root": "node src/cli.js"
+  }
+}

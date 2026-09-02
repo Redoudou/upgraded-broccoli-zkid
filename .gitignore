@@ -1,0 +1,9 @@
+node_modules/
+dist/
+*.log
+.env
+fixtures/*.key
+fixtures/*.pem
+fixtures/*.cbor
+bench/results/*.json
+.DS_Store
