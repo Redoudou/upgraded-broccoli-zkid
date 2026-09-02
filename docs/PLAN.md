@@ -12,6 +12,8 @@ Over-engineering is the biggest risk. [SIMPLICITY.md](SIMPLICITY.md) hard-codes 
 
 [CLOUD-EXECUTION.md](CLOUD-EXECUTION.md) says, per component, whether it executes in a cloud sandbox, in GitHub Actions, or only on a phone, and what infrastructure it needs. It also lists the seven plan changes the component research forced.
 
+[OPEN-BEFORE-M1.md](OPEN-BEFORE-M1.md) lists the fifteen facts an engineer still lacks before M1 and M2, and where each comes from.
+
 ## Milestone map
 
 | # | Milestone | Weeks | Dates | Owner | Blocks |

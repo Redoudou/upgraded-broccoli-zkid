@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { buildRequest, REQUESTED_ELEMENTS } from '../src/request.js';
 
-test('D6 request asks for exactly age_over_21 and expiry_date, nothing retained', () => {
+test('D6 request asks for exactly age_over_21 and expiry_date, nothing retained (element list only; envelope is a placeholder until M3)', () => {
   const req = buildRequest('abc');
   const els = req.digital.requests[0].data.elements;
   assert.deepEqual(els.map(e => e.name).sort(), ['age_over_21', 'expiry_date']);
