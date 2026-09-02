@@ -26,4 +26,6 @@ jobs:
           if diff -q /tmp/committed.sums packages/circuits/artifacts/SHA256SUMS; then echo "::notice::longfellow.wasm rebuild is byte-identical to the committed artifact"
           else echo "::warning::rebuilt artifacts differ from the committed ones (toolchain drift or pin change); see the log"; fi
       - uses: actions/upload-artifact@v4
-        with: { name: longfellow-artifacts-${{ github.run_number }}, path: packages/circuits/artifacts/ }
+        with:
+          name: longfellow-artifacts-${{ github.run_number }}
+          path: packages/circuits/artifacts/

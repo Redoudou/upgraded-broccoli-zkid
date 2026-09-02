@@ -3,6 +3,8 @@ on:
   push:
   pull_request:
   workflow_dispatch:   # lets a maintainer re-run CI on a branch without a new commit
+permissions:
+  contents: read       # these jobs never write to the repository
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -29,7 +31,9 @@ jobs:
       - run: cd packages/prover-page && npm run build
       - run: cp packages/prover-page/dist/SHA256SUMS build-${{ matrix.run }}.sha256
       - uses: actions/upload-artifact@v4
-        with: { name: build-${{ matrix.run }}, path: build-${{ matrix.run }}.sha256 }
+        with:
+          name: build-${{ matrix.run }}
+          path: build-${{ matrix.run }}.sha256
   reproducible-compare:
     needs: reproducible-build
     runs-on: ubuntu-latest
