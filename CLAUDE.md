@@ -42,6 +42,8 @@ make wasm       # rebuild longfellow.wasm + circuit from the pinned commit (Rust
 - The verify service imports shared code by relative path (`../../trust-list/src/merkle.js`, `../../circuits/longfellow.js`) rather than via npm; no workspace tooling.
 - `packages/prover-page/src/mdoc.js` and `scripts/gen-test-mdl.js` must stay byte-identical in output (test D10); change both.
 - Cloud sessions work on `claude/*` branches and open a PR to `main`.
+- Workflow files: never put `${{ }}` inside a YAML flow mapping (`with: { name: ${{ x }} }` is invalid YAML and GitHub rejects the whole file at startup). Before pushing a workflow change, parse each file (`python3 -c 'import yaml,sys; yaml.safe_load(open(sys.argv[1]))' .github/workflows/ci.yml`) and run every step's exact command locally.
+- `packages/circuits/artifacts/SHA256SUMS` lists bare file names; CI verifies it from inside `artifacts/`. `make wasm` regenerates it.
 
 ## What can be done where
 

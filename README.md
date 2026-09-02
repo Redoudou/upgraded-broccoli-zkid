@@ -2,7 +2,7 @@
 
 Zero-knowledge proof of a US driver's license, generated on the guest's phone, accepted by any venue. A venue learns "over 21, license valid, issued by a real DMV" and nothing else. Apache-2.0.
 
-**Status (2026-09-02): working prototype, demo level 2.** A real longfellow-zk proof is generated in the phone's browser from a test mDL issued by a test DMV, verified by the venue service, and the venue database holds a timestamp and a proof hash. What is still simulated is the wallet: a state-issued mDL from Apple or Google Wallet needs a registered relying party, so the page ships a test wallet holding a test credential.
+**Status (2026-09-02): working prototype, demo level 2.** A real longfellow-zk proof is generated in the phone's browser from a test mDL issued by a test DMV, verified by the venue service, and the venue database holds a timestamp and a proof hash. What is still simulated is the wallet: a state-issued mDL from Apple or Google Wallet needs a registered relying party, so the page ships a test wallet holding a test credential. CI runs the tests, the artifact hash check, the reproducible page build, and the Docker image on every push.
 
 ## Test it in five minutes
 
