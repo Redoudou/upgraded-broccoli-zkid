@@ -13,4 +13,4 @@ rustup target list --installed | grep -q wasm32-unknown-unknown || rustup target
   cargo build --release --bin lf )
 cp longfellow-wasm/target/wasm32-unknown-unknown/release/longfellow_wasm.wasm artifacts/longfellow.wasm
 [ -s artifacts/circuit-1.zst ] || longfellow-wasm/target/release/lf circuit 1 artifacts/circuit-1.zst
-sha256sum artifacts/longfellow.wasm artifacts/circuit-1.zst | tee artifacts/SHA256SUMS
+( cd artifacts && sha256sum longfellow.wasm circuit-1.zst | tee SHA256SUMS )   # bare names: CI checks from inside artifacts/
