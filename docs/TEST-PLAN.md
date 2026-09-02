@@ -15,9 +15,10 @@ Runtimes: unit and integration on CI (Linux, Node 24, Rust stable). Device tests
 | A5 | Unknown session | proof for a nonce never issued is rejected |
 | A6 | Storage shape | after an accepted proof the row is exactly `{timestamp, proof_hash}` |
 | A7 | Proof hash | `proof_hash = sha256(proof_bytes)`, stable across runs |
-| A8 | Result push | websocket client receives `green` within 1 s of acceptance, `red` on any rejection with a reason code and no proof contents |
+| A8 | Result push | the desk receives `green` within 1 s of acceptance, `red` on any rejection with a reason code and no proof contents. Carried over Server-Sent Events, not a websocket: same latency, no handshake code, no dependency (verified end to end in headless Chromium 2026-09-02) |
 | A9 | Verifier date | the verifier supplies today's date as the public input; a proof for an expired credential is red |
 | A10 | Root pin | service refuses to start if the configured root is missing or unsigned |
+| A11 | Transcript parity | `SessionTranscript(nonce)` is byte-identical in the verify service, the issuer script, and the prover page |
 
 ## B — Proof verification (integration, longfellow verifier)
 
@@ -31,7 +32,9 @@ Runtimes: unit and integration on CI (Linux, Node 24, Rust stable). Device tests
 | B6 | Stale root (previous epoch) | red until grace window policy says otherwise; policy is a test input |
 | B7 | Expiry equal to verifier date | red (strictly greater required) |
 | B8 | Proof bytes truncated or bit-flipped | red, no crash, no stack trace to the client |
-| B9 | Verifier throughput | 100 proofs verified sequentially, p95 under 500 ms on the CI runner |
+| B9 | Verifier throughput | 100 proofs verified sequentially, p95 under 500 ms on the CI runner. Today: ~4 s per proof in wasm on a slow sandbox; native `lf` is the upgrade path (ADR-0008) |
+
+Status 2026-09-02: B1 to B8 and F5 run against the real longfellow verifier with a proof generated from the test mDL in test setup (`packages/verify-service/test/verifier.test.js`). B3 and B7 are asserted at the wasm boundary (a false attribute value or an out-of-window date does not verify); the service-level reason code for both is `proof_invalid`. B5 covers a CA certificate presented as a document signer and a bogus certificate.
 
 ## C — Prover benchmark (device)
 
@@ -59,12 +62,16 @@ Method: the harness in `bench/` loads the test mDL from a fixture, runs the prov
 | D7 | Reproducible build | CI builds twice on separate runners; hashes equal; a deliberate one-byte change breaks equality |
 | D8 | Offline verify service | page shows an error state, does not retry indefinitely, does not keep the mdoc while waiting |
 | D9 | Third-party requests | Playwright network log shows requests to the page origin, the verify service, and the trust-root publisher only; the root is fetched at most once per page load |
+| D10 | CBOR parity | page-side `SessionTranscript`, `DeviceAuthentication` Sig_structure, and DeviceResponse assembly are byte-identical to the issuer script |
+| D11 | Device signature | the test wallet's device key signs as raw r\|\|s (64 bytes) the circuit consumes |
+| D12 | Issued fixture | the test mDL carries only the display claims and the one proven attribute |
 
 ## E — Trust-list pipeline and root publisher
 
 | Id | Test | Expect |
 |---|---|---|
 | E1 | Determinism | same VICAL input on two machines gives the same root |
+| E1b | Synthetic VICAL | `fixtures/certs` loads as CA (IACA) certificates and hashes to `fixtures/root.txt`; PEM and DER give the same leaf |
 | E2 | Single signer cannot publish | ERC-7812 write from one key reverts on testnet |
 | E3 | Timelock | root update queued, not effective before 24 h, effective after; tested with testnet time travel |
 | E4 | Inclusion proofs | every cert in the input verifies; a random cert does not |

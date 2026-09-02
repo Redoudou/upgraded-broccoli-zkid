@@ -33,7 +33,7 @@ Two layers. The global definition applies to every change. The milestone definit
 ## M2 — Demo level 1
 
 - Session nonce is 128 bits from a CSPRNG, expires at 60 s, single use.
-- Desk screen goes green within 1 s of the verify service accepting a proof, red on any failure, and back to waiting when the session expires.
+- Desk screen goes green within 1 s of the verify service accepting a proof, red on any failure, and back to waiting when the session expires. (Push channel: Server-Sent Events, see TEST-PLAN A8.)
 - Database schema has exactly two columns for proof records: `timestamp` and `proof_hash`. Migration test asserts this.
 - Demo level label visible on both desk and phone.
 - Runs on a laptop and a phone on the same network with one command.

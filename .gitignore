@@ -3,7 +3,8 @@ dist/
 *.log
 .env
 fixtures/*.key
-fixtures/*.pem
 fixtures/*.cbor
 bench/results/*.json
 .DS_Store
+data/
+packages/circuits/longfellow-wasm/target/

@@ -2,6 +2,8 @@
 
 From the completeness review of the component notes, 2026-09-02. Each item names where the answer comes from. Close them in this order; the first five block the benchmark.
 
+**Closed by the prototype (same day):** 1 (Rust `main` @ `5f348de`, ADR-0001), 2 (the Rust crates compile to `wasm32-unknown-unknown` unmodified; ADR-0007), 3 and 12 (`scripts/gen-test-mdl.js` issues a signed DeviceResponse the circuit accepts, no `@owf/mdoc` needed), 4 (`pkx`/`pky` are `0x`-prefixed hex, `now` is the 20-char tdate string, attributes are raw CBOR values, transcript is any bytes: see `packages/circuits/README.md`), 5 (version 8 circuits generated natively in 37 s, 300 KB zstd, committed), 13 (element list is `age_over_21` only; envelopes still open), 14 (ADR-0008). Still open: 6 to 11, 15.
+
 ## Blocks M1 (benchmark)
 
 1. **Which longfellow tree to pin.** The reviewed line is C++ v0.9 (Trail of Bits reviewed commit `981a349fad`); the Rust port on `main` is unreviewed and untagged. Benchmarking one and piloting the other voids the numbers. Decision in ADR-0001 after Google answers "reviewed baseline". Set `packages/circuits/LONGFELLOW_COMMIT`.

@@ -10,7 +10,9 @@ jobs:
       - run: make setup
       - run: make fixtures
       - run: make test
-      - name: PII grep on logs and fixtures policy
+      - name: Committed prover artifacts match their recorded hashes
+        run: cd packages/circuits/artifacts && sha256sum -c SHA256SUMS
+      - name: PII grep on code and config
         run: ./scripts/pii-scan.sh
       - name: Simplicity budgets (docs/SIMPLICITY.md)
         run: ./scripts/simplicity-check.sh
@@ -21,13 +23,22 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 24 }
-      - run: cd packages/prover-page && npm install --no-audit --no-fund && npm run build
-      - run: cd packages/prover-page && shasum -a 256 dist/* | tee build-${{ matrix.run }}.sha256
+      - run: cd packages/prover-page && npm run build
+      - run: cp packages/prover-page/dist/SHA256SUMS build-${{ matrix.run }}.sha256
       - uses: actions/upload-artifact@v4
-        with: { name: build-${{ matrix.run }}, path: packages/prover-page/build-${{ matrix.run }}.sha256 }
+        with: { name: build-${{ matrix.run }}, path: build-${{ matrix.run }}.sha256 }
   reproducible-compare:
     needs: reproducible-build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4
       - run: diff build-a/build-a.sha256 build-b/build-b.sha256 && echo "reproducible"
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -f deploy/Dockerfile -t greenlight-verify .
+      - run: |
+          docker run -d --name gl -p 8080:8080 greenlight-verify
+          for i in $(seq 1 20); do curl -fs localhost:8080/health && break || sleep 1; done
+          curl -fs localhost:8080/health | grep '"ok":true'

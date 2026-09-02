@@ -1,0 +1,22 @@
+# Copyright 2026 Green Light contributors. Apache-2.0.
+# Thin C-ABI wrapper over Google longfellow-zk (Rust port), pinned to the commit in ../LONGFELLOW_COMMIT.
+# Builds to wasm32 for the prover page and the verify service, and natively for the `lf` helper CLI.
+[package]
+name = "longfellow-wasm"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+mdoc-zk-runtime = { git = "https://github.com/google/longfellow-zk", rev = "5f348de0bedcc49fe3800a57f6bf2eecd0389391" }
+runtime-random = { git = "https://github.com/google/longfellow-zk", rev = "5f348de0bedcc49fe3800a57f6bf2eecd0389391" }
+getrandom = "0.3"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"

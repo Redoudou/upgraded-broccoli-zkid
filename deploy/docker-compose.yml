@@ -1,12 +1,23 @@
-# M7 reference deployment. One command: docker compose up. TLS via caddy. Not runnable until M7.
+# Copyright 2026 Green Light contributors. Apache-2.0.
+# Reference deployment (M7): `docker compose up --build` in this directory.
+#   Plain HTTP on port 80 by default (LAN demo). Set SITE_ADDRESS=your.domain.example for automatic TLS via Caddy.
 services:
   verify:
-    build: ../packages/verify-service
+    build: { context: .., dockerfile: deploy/Dockerfile }
     environment:
-      - DEMO_LEVEL=2
-      - TRUST_ROOT_URL=https://root.greenlight.example/root.txt
+      - DEMO_LEVEL=${DEMO_LEVEL:-2}
+      - PUBLIC_URL=${PUBLIC_URL:-}
+    volumes: ["proofs:/data"]
     expose: ["8080"]
+    restart: unless-stopped
   caddy:
     image: caddy:2
-    ports: ["443:443"]
-    volumes: ["./Caddyfile:/etc/caddy/Caddyfile", "../packages/desk-screen:/srv/desk", "../packages/prover-page/dist:/srv/prove"]
+    ports: ["80:80", "443:443"]
+    environment:
+      - SITE_ADDRESS=${SITE_ADDRESS:-:80}
+    volumes: ["./Caddyfile:/etc/caddy/Caddyfile:ro", "caddy:/data"]
+    depends_on: [verify]
+    restart: unless-stopped
+volumes:
+  proofs: {}
+  caddy: {}

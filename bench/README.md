@@ -1,13 +1,20 @@
-# M1 benchmark harness
+# Benchmark harness
 
-Purpose: decide ADR-0001. Tests C1–C6.
+Purpose: decide ADR-0001. Tests C1–C6 need the physical iPhone 13 and Pixel 6; the Node/wasm leg here runs anywhere and gives the floor.
 
-Requirements: Rust stable, wasm-pack, Xcode, Android SDK, longfellow-zk at the pinned commit, Mopro, an iPhone 13 (iOS 26, Safari) and a Pixel 6 (Android 16, Chrome). Physical devices only.
+## Node / wasm leg (runs today)
 
-Procedure per runtime and device:
-1. Prove over one of longfellow's embedded test mdocs (its test corpus, indices 0 to 25). `fixtures/test-mdl.json` is not a DeviceResponse and cannot be proven over; the signed CBOR fixture arrives in M2.
-2. Run the prover 20 times including the cold start. Record wall time, peak memory, and any crash or memory kill. Memory: Safari Web Inspector Timelines memory instrument (iPhone, `performance.memory` is Chrome-only), Chrome DevTools performance monitor (Pixel), Xcode Instruments Allocations (Mopro iOS), Android Studio Profiler (Mopro Android).
-3. Write `bench/results/<runtime>-<device>.json` as `[{run, ms, peak_mb, ok}]`.
-4. `node bench/report.js` produces `bench/REPORT.md` with p50, p95, failures. Never hand-edit the report.
+```bash
+make bench            # 5 runs; or: node bench/wasm-node.js 20 && node bench/report.js
+```
+Each run is a cold start (instantiate the wasm, sign a fresh session transcript with the test credential's device key, prove, verify) and writes `bench/results/wasm-node.json` as `[{run, ms, peak_mb, ok}]`. `report.js` renders `bench/REPORT.md` with p50, p95, failures. Never hand-edit the report.
+
+## Device legs (C1–C6)
+
+Requirements: the two phones, this repository served on the same network (`make demo`), Safari Web Inspector or Chrome DevTools for memory.
+
+1. Open the prover page from the desk QR on the phone, share, note the on-screen proving time. Repeat 20 times including the first cold load. Record wall time, peak memory (Safari Timelines memory instrument; Chrome performance monitor), and any crash or memory kill.
+2. Write `bench/results/<runtime>-<device>.json` as `[{run, ms, peak_mb, ok}]`.
+3. `node bench/report.js`.
 
 Decision rule is in ADR-0001.
