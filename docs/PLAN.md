@@ -16,7 +16,9 @@ Over-engineering is the biggest risk. [SIMPLICITY.md](SIMPLICITY.md) hard-codes 
 
 ## Where we are (2026-09-02)
 
-A working level 2 prototype exists (README "Test it in five minutes"): real longfellow-zk proof in the browser from a test mDL issued by a test DMV, verified by the service, hash-only storage, Docker image. Against the map below: M0 done; M1 browser feasibility answered (ADR-0001, ADR-0007), device numbers pending; M2 done with SSE instead of a websocket; M3 done except the real wallet hand-off, device wipe tests, and reproducible build on two machines; M4 nonce statement found already in-circuit, membership on the fallback (ADR-0006); M5 synthetic VICAL and root only; M6 flow ready, waits on the phones; M7 Docker image and compose exist and are exercised in CI, no TLS domain or venue yet. CI on GitHub Actions is green since 2026-09-02; the scaffold's workflow files had invalid YAML and had never run. Open facts are in [OPEN-BEFORE-M1.md](OPEN-BEFORE-M1.md); items 1, 2, 3, 4, 12, 13 (element list), 14 are closed by the prototype.
+A working level 2 prototype exists (README "Test it in five minutes"): real longfellow-zk proof in the browser from a test mDL issued by a test DMV, verified by the service, hash-only storage, Docker image. Against the map below: M0 done; M1 browser feasibility answered (ADR-0001, ADR-0007), device numbers pending; M2 done with SSE instead of a websocket; M3 done except the real wallet hand-off, device wipe tests, and reproducible build on two machines; M4 nonce statement found already in-circuit, membership on the fallback (ADR-0006); M5 synthetic VICAL and root, permanently (ADR-0009); M6 flow ready, waits on the phones; M7 Docker image and compose exist and are exercised in CI, no TLS domain or venue yet. CI on GitHub Actions is green since 2026-09-02; the scaffold's workflow files had invalid YAML and had never run. Open facts are in [OPEN-BEFORE-M1.md](OPEN-BEFORE-M1.md); items 1, 2, 3, 4, 12, 13 (element list), 14 are closed by the prototype.
+
+The dates in the milestone table below assume a two-engineer team and partner replies landing on schedule; neither holds. Read them as sequencing (what depends on what), not as commitments. The one exception is AAMVA: it was never really a date risk, it is a decision — not pursued, permanently (ADR-0009).
 
 ## Milestone map
 
@@ -126,7 +128,7 @@ Critical path: M1 → M3 → M6 → M8 → M9. The circuit additions in M4 are t
 - HTTPS publication of root, tree, and a signed changelog.
 - ERC-7812 publisher: writes the root to the registry from a multi-sig with a 24 h timelock. Signers: EEA, PSE, one DMV, per ADR-0003.
 - Published root policy document.
-- Until AAMVA grants VICAL access: pipeline runs on a synthetic VICAL containing the test DMV cert. Real VICAL is an M8 gate item, not an M5 one.
+- Pipeline runs on a synthetic VICAL containing the test DMV cert. This is permanent, not a placeholder for a pending AAMVA ask (ADR-0009): the convener is not pursuing AAMVA relying-party access, and no gate below depends on it arriving.
 
 **Exit gate.** Root published to HTTPS and a testnet ERC-7812 slot from the synthetic VICAL, changelog entry present, timelock test in TEST-PLAN group E green.
 
@@ -165,11 +167,12 @@ This is the only milestone that is purely a gate. It is pass or fail on the foll
 1. longfellow security review reports have landed and the pilot builds against a reviewed 1.x tag, not `main` (spec decision 2).
 2. Audit of the assembled stack complete: prover page, verify service, trust-list pipeline, deployment. Findings rated high or critical closed.
 3. Legal memo received and does not block age-gated retail.
-4. AAMVA VICAL relying-party access granted and the real root published with the timelock.
-5. Named DMV contact confirmed.
-6. Venue chain signed for two sites, hotel site confirmed as the hard case.
-7. Privacy audit test (TEST-PLAN group F) shows zero PII in the venue database after a full demo run.
-8. All M1 to M7 exit gates signed.
+4. Named DMV contact confirmed.
+5. Venue chain signed for two sites, hotel site confirmed as the hard case.
+6. Privacy audit test (TEST-PLAN group F) shows zero PII in the venue database after a full demo run.
+7. All M1 to M7 exit gates signed.
+
+Real AAMVA VICAL access is not a gate item (ADR-0009): the trust-list root stays synthetic unless an external partner brings real access to us. A pilot on a synthetic root is a pilot with a labelled, permanent caveat, not a blocked pilot.
 
 If any item fails, the pilot start slips and the plan is re-baselined. There is no partial pilot.
 
@@ -195,7 +198,7 @@ If any item fails, the pilot start slips and the plan is re-baselined. There is 
 | longfellow reviews slip past week 8 | 8, technical | convener | Ask for status in M0; if reviews are late, M8 fails and the pilot slips | M8 item 1 |
 | Safari WASM memory kill on iPhone 13 | 8, technical | eng B | M1 decides early; native fallback | TEST C1 |
 | Circuit additions not accepted upstream | 6, 2 | eng B | Fallback in M4 with labelled privacy trade-off | TEST B4, B5 |
-| AAMVA denies VICAL access | 7, 4 | convener | Synthetic VICAL for build; real access is an M8 gate | M8 item 4 |
+| Real VICAL access never arrives | 7, 4 | convener | Not pursued by design (ADR-0009); synthetic VICAL is permanent, labelled in every demo and the pilot report | — |
 | Revoked, unexpired license passes | 8, technical | — | Out of scope for pilot; stated in report and runbook | documented, not tested |
 | Root publisher inserts a fake DMV | 8, trust | eng A | Multi-sig, 24 h timelock, public changelog | TEST E2, E3 |
 | Plaintext mdoc lingers on the page | 8, trust | eng B | Wipe, CSP, static site, reproducible build | TEST D1–D4 |

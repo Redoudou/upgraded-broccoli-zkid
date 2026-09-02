@@ -36,6 +36,16 @@ Level 1, the same flow with the proof stubbed, is `make demo1`. Docker: `cd depl
 | Wallet hand-off | simulated | The Digital Credentials API request shape exists (`packages/prover-page/src/request.js`); the OS wallet sheet is a page element |
 | `expiry_date` | not proven | The circuit checks the MSO validity window; disclosing `expiry_date` itself would leak a value, so it is not requested |
 
+## MVP now, production later
+
+What you can see today: real proof, real verify logic, real hash-only storage, one command to run it. Three things stand between this and production, none of them engineering:
+
+1. **Trust list.** The venue trusts a real DMV, not a test one. Needs AAMVA VICAL access or a DMV publishing its own root — not something this team is pursuing (ADR-0009). The demo's trust list is synthetic, permanently, not "not yet real."
+2. **Wallet.** The credential comes from Apple or Google Wallet, not a test wallet baked into the page. Needs a registered relying party with each vendor.
+3. **Legal sign-off.** A law firm confirms a ZK proof satisfies the age-verification statute in whatever state runs the pilot. Not started.
+
+Everything else — the proof, the verifier, the circuit, the deployment — already works.
+
 ## Documents
 
 - [SPEC.md](SPEC.md) — spec v3, the source of truth
