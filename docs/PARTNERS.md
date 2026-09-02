@@ -7,11 +7,11 @@
 | Google longfellow / Dyne.org | Security-review status; device-binding extension | eng B | | 2026-09-08 | not sent | M4, M8 item 1 |
 | Rarimo | ERC-7812 registry slot for the VICAL root | eng A | | 2026-09-18 | not sent | M5 |
 | Aztec / ZKPassport | Advice on the onchain port | eng A | | 2026-10-09 | not sent | post-pilot |
-| AAMVA DTS | Relying-party access to VICAL | convener | | 2026-09-25 | not sent | M8 item 4 |
-| One state DMV (CA default, NY to confirm) | Named pilot contact; multi-sig signer | convener | | 2026-09-25 | not sent | M5 signer, M8 item 5 |
-| Venue chain + law firm | Two retail sites, one hotel; legal memo | convener | | 2026-09-18 | not sent | M7, M8 items 3 and 6 |
+| AAMVA DTS | Relying-party access to VICAL | — | — | — | not pursued (ADR-0009) | none — synthetic VICAL is permanent |
+| One state DMV (CA default, NY to confirm) | Named pilot contact; multi-sig signer | convener | | 2026-09-25 | not sent | M5 signer, M8 item 4 |
+| Venue chain + law firm | Two retail sites, one hotel; legal memo | convener | | 2026-09-18 | not sent | M7, M8 items 3 and 5 |
 
-Update this table when an ask goes out. The M0 gate requires every row to have a sent date.
+Update this table when an ask goes out. The M0 gate requires every row to have a sent date, except AAMVA DTS: that ask is not going out (ADR-0009), by decision, not by delay.
 
 ## Questions per partner
 
@@ -89,7 +89,7 @@ Copied from the "Open questions for the partner call" section of each component 
   - [onchain-verifier-nullifier] `RootRegistry` governance: who can add certificate/circuit roots, is there a timelock or guardian pause beyond `RootVerifier.pause()`; would they review Green Light's multi-sig plus 24 h timelock policy for the VICAL root?
   - [onchain-verifier-nullifier] Would ZKPassport expose the OPRF salted-nullifier network to third-party circuits, or document its server operators, for a DMV-unlinkable per-person identifier?
 
-- **AAMVA DTS**
+- **AAMVA DTS** — not pursued (ADR-0009); questions kept below only in case AAMVA or a state DMV approaches us first.
   - [aamva-vical] Written permission under the T&C to publish a Merkle root, inclusion proofs and a changelog derived from the VICAL, and for each multi-sig signer (EEA, PSE, one DMV) to download it. Are certificate hashes a "derivative work"?
   - [aamva-vical] Is `/vical/vc` a supported "latest" endpoint? Will `nextUpdate` be honoured as a contract, and is there any push or notification on out-of-cycle removals?
   - [aamva-vical] Production DTS: timeline, and whether relying-party terms, registration or fees change.
