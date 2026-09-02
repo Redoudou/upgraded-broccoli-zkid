@@ -1,0 +1,93 @@
+# Copyright 2026 Green Light contributors. Apache-2.0.
+# Why this workflow exists (SIMPLICITY.md): M1 needs longfellow-zk built at a recorded commit on a
+# machine we do not own. Upstream has no WASM target yet (docs/components/longfellow-zk.md), so this
+# job runs the doc's native build and keeps the logs; the WASM leg is added when upstream ships one.
+name: longfellow-wasm
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 3 * * *'   # nightly, UTC
+permissions:
+  contents: read
+jobs:
+  native-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      DOC: docs/components/longfellow-zk.md
+      PIN: packages/circuits/LONGFELLOW_COMMIT
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read the pin
+        id: pin
+        run: |
+          set -euo pipefail
+          mkdir -p logs
+          commit=$(sed -n 's/^LONGFELLOW_COMMIT=//p' "$PIN" | tr -d '[:space:]')
+          echo "commit=$commit" | tee -a "$GITHUB_OUTPUT" logs/pin.txt
+          if [ -z "$commit" ] || [ "$commit" = unpinned ]; then
+            echo "::notice title=longfellow-zk not pinned::$PIN is 'unpinned'. Pin a commit when M1 begins (docs/PLAN.md); skipping the build."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          elif ! echo "$commit" | grep -Eq '^[0-9a-f]{7,40}$'; then
+            echo "::error::$PIN must be LONGFELLOW_COMMIT=<hex sha> or LONGFELLOW_COMMIT=unpinned, got '$commit'"; exit 1
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Confirm the component doc still carries build commands
+        id: doc
+        if: steps.pin.outputs.skip == 'false'
+        run: |
+          set -euo pipefail
+          awk '/^## How to build or integrate/{p=1} /^## /&&!/How to build/{p=0} p' "$DOC" | tee logs/doc-build-section.md
+          if grep -q 'cmake -D CMAKE_BUILD_TYPE=Release -S lib -B clang-build-release' "$DOC"; then
+            echo "has=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=needs build commands::$DOC no longer contains the cmake build line; build section printed above, nothing built."
+          fi
+
+      - name: Clone longfellow-zk at the pinned commit
+        if: steps.pin.outputs.skip == 'false' && steps.doc.outputs.has == 'true'
+        env:
+          COMMIT: ${{ steps.pin.outputs.commit }}
+        run: |
+          set -euo pipefail
+          git clone https://github.com/google/longfellow-zk longfellow-zk
+          git -C longfellow-zk checkout --detach "$COMMIT"
+          git -C longfellow-zk log -1 --format='%H %cd %s' | tee logs/commit.txt
+
+      - name: Ubuntu build dependencies (list from the doc)
+        if: steps.pin.outputs.skip == 'false' && steps.doc.outputs.has == 'true'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq build-essential clang cmake libssl-dev libzstd-dev libgtest-dev libbenchmark-dev zlib1g-dev
+
+      - name: Native build (exact commands from the doc)
+        id: build
+        if: steps.pin.outputs.skip == 'false' && steps.doc.outputs.has == 'true'
+        continue-on-error: true
+        working-directory: longfellow-zk
+        run: |
+          set -o pipefail
+          {
+            CXX=clang++ cmake -D CMAKE_BUILD_TYPE=Release -S lib -B clang-build-release --install-prefix ${PWD}/install
+            cd clang-build-release && make -j 16 && ctest -j 16
+          } 2>&1 | tee ../logs/build.log
+
+      - name: Upload build logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: longfellow-build-logs-${{ github.run_number }}
+          path: logs/
+          if-no-files-found: ignore
+
+      - name: Fail the job if the build failed
+        if: steps.build.outcome == 'failure'
+        env:
+          COMMIT: ${{ steps.pin.outputs.commit }}
+        run: |
+          echo "::error title=longfellow-zk build failed::commit $COMMIT; see the longfellow-build-logs artifact"
+          exit 1

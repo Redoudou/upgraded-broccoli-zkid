@@ -4,6 +4,8 @@ Two layers. The global definition applies to every change. The milestone definit
 
 ## Global — every merged change
 
+- Within the budgets in [SIMPLICITY.md](SIMPLICITY.md); `scripts/simplicity-check.sh` passes. A new dependency, package, service, table, or workflow carries a one-line reason it cannot be avoided.
+
 - Code is under Apache-2.0 with the header present on new files.
 - CI green: lint, unit tests, integration tests, reproducible-build check where the package is the prover page.
 - No new dependency without a one-line justification in the PR and a licence compatible with Apache-2.0.

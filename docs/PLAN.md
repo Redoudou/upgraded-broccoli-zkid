@@ -4,6 +4,10 @@ Source: [SPEC.md](../SPEC.md) v3. Start date: Monday 2026-08-31 (week 0). Team: 
 
 Every milestone has a gate. A gate is a short written check against the definition of done in [DOD.md](DOD.md) and the tests in [TEST-PLAN.md](TEST-PLAN.md). Nothing starts the next milestone's exit gate until the previous one is signed, but work on later milestones may begin early where noted.
 
+## The one rule
+
+Over-engineering is the biggest risk. [SIMPLICITY.md](SIMPLICITY.md) hard-codes what we do not build and the size budgets CI enforces. Every gate below asks what can be removed before it asks what is done.
+
 ## Milestone map
 
 | # | Milestone | Weeks | Dates | Owner | Blocks |

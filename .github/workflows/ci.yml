@@ -12,6 +12,8 @@ jobs:
       - run: make test
       - name: PII grep on logs and fixtures policy
         run: ./scripts/pii-scan.sh
+      - name: Simplicity budgets (docs/SIMPLICITY.md)
+        run: ./scripts/simplicity-check.sh
   reproducible-build:
     runs-on: ubuntu-latest
     strategy: { matrix: { run: [a, b] } }

@@ -1,0 +1,9 @@
+{
+  "name": "Green Light",
+  "image": "mcr.microsoft.com/devcontainers/base:bookworm",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": { "version": "24" },
+    "ghcr.io/devcontainers/features/rust:1": { "version": "stable", "profile": "minimal" }
+  },
+  "postCreateCommand": "bash scripts/setup-toolchain.sh && make setup"
+}

@@ -1,6 +1,6 @@
 PKGS := packages/verify-service packages/trust-list packages/prover-page
 
-.PHONY: setup test lint fixtures demo1 bench
+.PHONY: setup test lint fixtures demo1 bench check
 
 setup:
 	@for p in $(PKGS); do (cd $$p && npm install --no-audit --no-fund); done
@@ -19,3 +19,6 @@ demo1:
 
 bench:
 	@echo "See bench/README.md. Requires Rust, wasm-pack and the two physical devices."
+
+check:
+	./scripts/simplicity-check.sh && ./scripts/pii-scan.sh

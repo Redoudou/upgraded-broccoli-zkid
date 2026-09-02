@@ -104,3 +104,11 @@ Every screen shows which level is running.
 - Level 2 — proof. longfellow-zk on a real iPhone and Pixel. Credential is still a test mDL.
 
 A real state-issued mDL needs AAMVA trust-list access and a registered relying party. Neither is in hand yet.
+
+## Building from the cloud
+
+**In a Claude Code cloud session** (Ubuntu 24.04 sandbox, fresh clone from GitHub, so push first and work on a `claude/*` branch). Everything in JavaScript works there: `make setup`, `make fixtures`, `make test`, `make check`, and the reproducible-build check. `scripts/setup-toolchain.sh` adds Rust, wasm-pack, cmake, clang and ninja without sudo, which is enough for the longfellow-zk native C++ and Rust builds once `packages/circuits/LONGFELLOW_COMMIT` is pinned, and Docker is preinstalled for `deploy/`. Project config lives in `CLAUDE.md`; nothing under `~/.claude` carries over.
+
+**In GitHub Actions.** `ci.yml` runs the tests, the PII scan, the simplicity budgets, and the two-runner reproducible build on every push. `longfellow-wasm.yml` (manual or nightly) clones longfellow-zk at the pinned commit, runs the native build with the commands in `docs/components/longfellow-zk.md`, and keeps the logs as an artifact. The Mopro iOS bindings and `.xcframework` need Xcode, so they go on a `macos-*` runner; Android bindings need the NDK, which a Linux runner can install.
+
+**On a physical phone.** The M1 go/no-go (tests C1 to C6) needs a real iPhone 13 and Pixel 6: WASM in Safari and Chrome, Mopro native, 20 runs each, wall time and peak memory. The wipe checks D1 to D4 need a real browser heap. A real state-issued mDL additionally needs AAMVA trust-list access and a registered relying party; neither is in hand.
