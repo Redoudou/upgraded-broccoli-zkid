@@ -6,6 +6,10 @@ Zero-knowledge proof of a US driver's license, generated on the guest's phone, a
 - [docs/PLAN.md](docs/PLAN.md) — milestones M0 to M9, dates, gates, risk register
 - [docs/DOD.md](docs/DOD.md) — definition of done, global and per milestone
 - [docs/TEST-PLAN.md](docs/TEST-PLAN.md) — test groups A to G and pilot metrics
+- [docs/CLOUD-EXECUTION.md](docs/CLOUD-EXECUTION.md) — what runs in a cloud sandbox, in Actions, or only on a phone
+- [docs/SIMPLICITY.md](docs/SIMPLICITY.md) — the one rule and the budgets CI enforces
+- [docs/components/](docs/components/README.md) — verified notes on every component we assemble
+- [docs/SPEC-NOTES.md](docs/SPEC-NOTES.md) — where spec v3 disagrees with the evidence
 - [docs/PARTNERS.md](docs/PARTNERS.md) — the eight partner asks
 - [docs/adr](docs/adr) — decisions
 

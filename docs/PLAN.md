@@ -8,6 +8,10 @@ Every milestone has a gate. A gate is a short written check against the definiti
 
 Over-engineering is the biggest risk. [SIMPLICITY.md](SIMPLICITY.md) hard-codes what we do not build and the size budgets CI enforces. Every gate below asks what can be removed before it asks what is done.
 
+## Where each piece can run
+
+[CLOUD-EXECUTION.md](CLOUD-EXECUTION.md) says, per component, whether it executes in a cloud sandbox, in GitHub Actions, or only on a phone, and what infrastructure it needs. It also lists the seven plan changes the component research forced.
+
 ## Milestone map
 
 | # | Milestone | Weeks | Dates | Owner | Blocks |
