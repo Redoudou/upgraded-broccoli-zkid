@@ -4,6 +4,8 @@ Zero-knowledge proof of a US driver's license, generated on the guest's phone, a
 
 **Status (2026-09-02): working prototype, demo level 2.** A real longfellow-zk proof is generated in the phone's browser from a test mDL issued by a test DMV, verified by the venue service, and the venue database holds a timestamp and a proof hash. What is still simulated is the wallet: a state-issued mDL from Apple or Google Wallet needs a registered relying party, so the page ships a test wallet holding a test credential. CI runs the tests, the artifact hash check, the reproducible page build, and the Docker image on every push.
 
+**See it without installing anything:** [interactive walkthrough](https://claude.ai/code/artifact/c9ee1a2c-687a-4364-84d0-a1cd5aee2610) — a fictional, simulated front end of the desk screen and the guest's phone, built from this prototype's real copy and timing. Useful for partner and venue conversations; not a substitute for `make demo`.
+
 ## Test it in five minutes
 
 Needs Node 24 (22 works) and openssl. No Rust, no Docker, no phone required; a phone on the same Wi-Fi makes it real.
