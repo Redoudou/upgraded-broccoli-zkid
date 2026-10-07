@@ -36,7 +36,7 @@ What does not exist: security review, threat model, key management, revocation h
 
 Judge the cryptography and the standards conformance, not who typed it.
 
-**See it without installing anything:** [nothingtosteal.org](https://nothingtosteal.org) — a simulated walkthrough of the desk screen and the guest's phone, built from this prototype's real copy and timing. No install, no account. Not a substitute for `make demo`.
+**See it without installing anything:** [helloredwan.me/upgraded-broccoli-zkid](https://helloredwan.me/upgraded-broccoli-zkid/) — a simulated walkthrough of the desk screen and the guest's phone, built from this prototype's real copy and timing. No install, no account. Not a substitute for `make demo`.
 
 ---
 
