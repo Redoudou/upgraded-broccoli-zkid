@@ -12,6 +12,9 @@ On August 31, 2026 a dark-web service called Nexus began selling scans of more t
 **Why the EEA.** The hard part is not the cryptography. It is getting a DMV, two wallet vendors, a verifier vendor, a venue chain and a standards body to agree on one profile and one trust root. That is a neutral-convener problem.
 ---
 ## 1. Architecture
+
+![Figure 1 — System architecture](docs/diagrams/fig1-architecture.png)
+
 ```
  GUEST PHONE                            VERIFIER (venue)               PUBLIC
  ┌────────────────────────┐             ┌──────────────────────┐      ┌────────────────────┐
@@ -29,6 +32,9 @@ On August 31, 2026 a dark-web service called Nexus began selling scans of more t
 ```
 ---
 ## 2. Bill of materials
+
+![Figure 3 — What we assemble, and who owns each piece](docs/diagrams/fig3-components.png)
+
 | Layer | Component | Source | Status | Our work |
 |---|---|---|---|---|
 | Credential | ISO 18013-5 mDL in Apple / Google / Samsung / state wallet | State DMVs | Live, 21 states + PR | None |
@@ -43,6 +49,8 @@ On August 31, 2026 a dark-web service called Nexus began selling scans of more t
 | Reference deployment | — | **Us** | — | Docker one-liner |
 Nine rows. Two are ours. The rest is integration.
 ---
+![Figure 2 — One check, end to end](docs/diagrams/fig2-sequence.png)
+
 ## 3. Guest side
 **Needs:** a phone with an mDL in a wallet that supports the Digital Credentials API. No app install for the browser path; optional native app via Mopro for older iPhones.
 **Flow:** scan QR → page opens → `navigator.credentials.get()` requests `age_over_21` and `expiry_date` → OS wallet sheet → biometric → page receives the signed mdoc → longfellow proves → page sends proof → wipes mdoc.
