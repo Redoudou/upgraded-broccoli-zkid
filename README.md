@@ -1,6 +1,8 @@
-# Green Light
+# Nothing to Steal
 
 **Zero-knowledge proof of a US driver's license, generated on the guest's phone, accepted by any venue.** The venue learns "over 21, license valid, issued by a real DMV." Nothing else.
+
+An experiment, not a product: built after the license breach below to show how little it takes to protect people. What makes it different is that nothing is invented: it runs on the identity standards DMVs already issue to (ISO/IEC 18013-5 mobile driver's licenses, a DMV issuer trust list) plus open-source zero-knowledge proofs. See [Standards](#standards).
 
 Apache-2.0. Personal project, not affiliated with any organization. Built with heavy use of AI.
 
@@ -34,7 +36,7 @@ What does not exist: security review, threat model, key management, revocation h
 
 Judge the cryptography and the standards conformance, not who typed it.
 
-**See it without installing anything:** [interactive walkthrough](https://claude.ai/code/artifact/c9ee1a2c-687a-4364-84d0-a1cd5aee2610) — a fictional, simulated front end of the desk screen and the guest's phone, built from this prototype's real copy and timing. Useful for partner and venue conversations; not a substitute for `make demo`.
+**See it without installing anything:** [helloredwan.me/upgraded-broccoli-zkid](https://helloredwan.me/upgraded-broccoli-zkid/) — a simulated walkthrough of the desk screen and the guest's phone, built from this prototype's real copy and timing. No install, no account. Not a substitute for `make demo`.
 
 ---
 
@@ -63,7 +65,7 @@ flowchart TB
     subgraph TODAY["❌ Today"]
         T1["Scan license"] --> T2["Vendor stores name,<br/>address, DOB, license no.,<br/>photo, IR + UV scans"] --> T3["Vendor breached"] --> T4["153M licenses<br/>for sale"]
     end
-    subgraph GREEN["✅ Green Light"]
+    subgraph GREEN["✅ Nothing to Steal"]
         G1["Guest proves"] --> G2["Venue stores<br/>timestamp + hash"] --> G3["Venue breached"] --> G4["Attacker gets<br/>nothing"]
     end
 ```
@@ -83,7 +85,7 @@ There is nothing in it worth stealing. That is the entire point.
 Needs Node 24 (22 works) and openssl. No Rust, no Docker, no phone required; a phone on the same Wi-Fi makes it real.
 
 ```bash
-git clone <this repo> && cd upgraded-broccoli-zkid
+git clone <this repo> nothingtosteal && cd nothingtosteal
 make demo
 ```
 
@@ -212,6 +214,7 @@ packages/prover-page      static page: test wallet sheet, longfellow prover in a
 packages/trust-list       certs dir (synthetic VICAL) -> Merkle root + inclusion proofs; HTTPS/ERC-7812 publisher is M5        (us)
 packages/circuits         longfellow-zk pin, C-ABI wasm wrapper crate, committed artifacts (longfellow.wasm, circuit-1.zst)      (wrapper is us)
 deploy/                   Dockerfile + compose + Caddy
+site/                     the public walkthrough page, published to GitHub Pages by .github/workflows/pages.yml
 fixtures/                 test DMV IACA + DS certs, signed test mDL with its device key, trust root (all test, regenerable)
 bench/                    Node/wasm bench leg; device legs need the phones
 scripts/                  fixture generation (openssl + Node), simplicity and PII checks, toolchain setup
