@@ -29,8 +29,8 @@ wasm:             ## rebuild packages/circuits/artifacts from the pinned longfel
 bench:            ## prove N times in Node (wasm) and write bench/results + bench/REPORT.md
 	node bench/wasm-node.js && node bench/report.js
 
-check:            ## simplicity budgets + PII scan, same as CI
-	./scripts/simplicity-check.sh && ./scripts/pii-scan.sh
+check:            ## secret scan + simplicity budgets + PII scan, same as CI
+	bash scripts/secret-scan.sh && ./scripts/simplicity-check.sh && ./scripts/pii-scan.sh
 
 clean:
 	rm -rf packages/*/node_modules packages/prover-page/dist data
