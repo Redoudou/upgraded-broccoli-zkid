@@ -1,0 +1,693 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nothing to Steal · How a check works</title>
+<meta name="description" content="Prove you're over 21 without handing over your license. An open-source experiment built on existing ISO/IEC 18013-5 mobile driver's license standards: the venue gets one answer and a hash, so a breach has nothing to steal.">
+<meta property="og:title" content="Nothing to Steal">
+<meta property="og:description" content="Prove you're over 21 without handing over your license. Built on the ISO and DMV identity standards that already exist. The venue keeps a timestamp and a hash; nothing else exists to breach.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
+<meta name="theme-color" content="#158A5C">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='6' fill='%23158A5C'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>:root{color-scheme:light dark}body{margin:0;padding:0}img{max-width:100%}[hidden]:not([hidden=until-found]){display:none!important}a{color:var(--brand)}</style>
+<style>
+  :root{
+    --ink:#12141A; --ink-soft:#585C68; --ink-faint:#8A8E99;
+    --paper:#F5F4F0; --surface:#FFFFFF; --surface-sunk:#ECEAE3; --line:#DEDCD2;
+    --brand:#3B4FD9; --brand-soft:#E7E9FB; --brand-ink:#FFFFFF;
+    --verified:#158A5C; --verified-soft:#E1F3EA; --verified-ink:#FFFFFF;
+    --denied:#C23F2C; --denied-soft:#FBE7E2; --denied-ink:#FFFFFF;
+    --pending:#9C6E14; --pending-soft:#F5E8CE;
+    --scrim:rgba(18,20,26,.44);
+    --shadow:0 1px 2px rgba(18,20,26,.06), 0 10px 28px -14px rgba(18,20,26,.28);
+    --device-bezel:#15161C; --device-indicator:rgba(255,255,255,.85);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ink:#F1EFE9; --ink-soft:#B7B6AE; --ink-faint:#7A7D87;
+      --paper:#0D0F14; --surface:#161922; --surface-sunk:#10121A; --line:#272B36;
+      --brand:#8791FF; --brand-soft:#232853; --brand-ink:#0D0F14;
+      --verified:#3FC98D; --verified-soft:#103527; --verified-ink:#06120C;
+      --denied:#FF8069; --denied-soft:#3B1712; --denied-ink:#220704;
+      --pending:#E7B84E; --pending-soft:#3A2C0C;
+      --scrim:rgba(0,0,0,.62);
+      --shadow:0 1px 0 rgba(0,0,0,.4), 0 20px 44px -18px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --ink:#F1EFE9; --ink-soft:#B7B6AE; --ink-faint:#7A7D87;
+    --paper:#0D0F14; --surface:#161922; --surface-sunk:#10121A; --line:#272B36;
+    --brand:#8791FF; --brand-soft:#232853; --brand-ink:#0D0F14;
+    --verified:#3FC98D; --verified-soft:#103527; --verified-ink:#06120C;
+    --denied:#FF8069; --denied-soft:#3B1712; --denied-ink:#220704;
+    --pending:#E7B84E; --pending-soft:#3A2C0C;
+    --scrim:rgba(0,0,0,.62);
+    --shadow:0 1px 0 rgba(0,0,0,.4), 0 20px 44px -18px rgba(0,0,0,.6);
+  }
+
+  *{box-sizing:border-box}
+  body{background:var(--paper); color:var(--ink); font-family:"IBM Plex Sans",system-ui,sans-serif;}
+  h1,h2,h3{font-family:Archivo,system-ui,sans-serif; font-weight:800; text-wrap:balance; margin:0;}
+  p{margin:0}
+  button{font:inherit; color:inherit; cursor:pointer;}
+  :focus-visible{outline:2px solid var(--brand); outline-offset:2px; border-radius:4px;}
+  .mono{font-family:"IBM Plex Mono",ui-monospace,monospace; font-variant-numeric:tabular-nums;}
+
+  .wrap{max-width:1000px; margin:0 auto; padding:28px 20px 56px;}
+
+  /* ---------- masthead ---------- */
+  .masthead{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:22px;}
+  .brand{display:flex; align-items:center; gap:9px; font-family:Archivo; font-weight:800; font-size:19px; letter-spacing:.01em;}
+  .brand-dot{width:11px; height:11px; border-radius:50%; background:var(--verified); box-shadow:0 0 0 3px var(--verified-soft); flex:none;}
+  .pill{display:inline-flex; align-items:center; gap:6px; padding:5px 11px; border-radius:999px; font-size:11.5px; font-weight:600; letter-spacing:.04em; text-transform:uppercase; white-space:nowrap;}
+  .pill-demo{background:var(--brand-soft); color:var(--brand);}
+  .pill.small{padding:3px 8px; font-size:10px;}
+
+  /* ---------- intro copy ---------- */
+  .intro-copy{max-width:62ch; margin-bottom:22px;}
+  .intro-copy h1{font-size:clamp(26px,3.6vw,34px); margin-bottom:8px;}
+  .intro-copy p{color:var(--ink-soft); font-size:15px; line-height:1.55;}
+  .intro-copy p + p{margin-top:10px;}
+
+  /* ---------- guide ---------- */
+  .guide{list-style:none; margin:0 0 26px; padding:0; display:flex; flex-wrap:wrap; gap:10px 22px;}
+  .guide li{display:flex; align-items:center; gap:9px; font-size:13.5px; color:var(--ink-soft); font-weight:500;}
+  .guide-num{display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; border-radius:50%; background:var(--surface); border:1px solid var(--line); font-family:"IBM Plex Mono"; font-size:11px; color:var(--ink); flex:none;}
+
+  /* ---------- stage ---------- */
+  .stage{display:grid; grid-template-columns:minmax(0,420px) minmax(0,300px); justify-content:center; gap:26px; align-items:start;}
+  @media (max-width:760px){ .stage{grid-template-columns:minmax(0,420px); justify-items:center;} }
+
+  .panel{background:var(--surface); border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow); overflow:hidden;}
+
+  /* ---------- desk panel ---------- */
+  .desk{padding:20px 22px 18px; width:100%;}
+  .desk-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:18px;}
+  .desk-head .brand{font-size:14px;}
+  .desk-head .brand-dot{width:8px; height:8px;}
+  .state-block{border-radius:14px; padding:20px; text-align:center; background:var(--surface-sunk); transition:none;}
+  .state-word{font-size:clamp(26px,4vw,32px); letter-spacing:.01em; line-height:1;}
+  .state-sub{margin-top:8px; font-size:13.5px; color:var(--ink-soft); line-height:1.5;}
+  [data-status="waiting"] .state-word{color:var(--ink-faint);}
+  [data-status="verifying"] .state-word{color:var(--pending);}
+  [data-status="verified"]{background:var(--verified-soft);}
+  [data-status="verified"] .state-word{color:var(--verified);}
+  [data-status="declined"]{background:var(--denied-soft);}
+  [data-status="declined"] .state-word{color:var(--denied);}
+
+  .qr-zone{display:flex; flex-direction:column; align-items:center; gap:10px; margin-top:16px;}
+  .qr-btn{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:10px; line-height:0; transition:none;}
+  .qr-btn:not(:disabled):hover{border-color:var(--brand);}
+  .qr-btn:disabled{opacity:.45; cursor:default;}
+  .qr-btn canvas{display:block; width:150px; height:150px;}
+  .qr-caption{font-size:12.5px; color:var(--ink-faint); text-align:center; max-width:220px;}
+  .ttl-badge{display:inline-flex; align-items:center; gap:6px; font-size:12px; color:var(--ink-soft);}
+  .ttl-badge b{color:var(--ink); font-weight:600;}
+
+  .result-zone{margin-top:16px; text-align:center;}
+  .result-icon{width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 10px; font-size:19px; font-weight:700;}
+  [data-status="verified"] .result-icon{background:var(--verified); color:var(--verified-ink);}
+  [data-status="declined"] .result-icon{background:var(--denied); color:var(--denied-ink);}
+
+  .db{margin-top:20px;}
+  .db-head{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:8px;}
+  .db-head h3{font-family:"IBM Plex Sans"; font-weight:600; font-size:12px; letter-spacing:.05em; text-transform:uppercase; color:var(--ink-faint);}
+  .db-head span{font-size:11px; color:var(--ink-faint);}
+  table{width:100%; border-collapse:collapse; font-size:12.5px;}
+  thead th{text-align:left; font-weight:500; color:var(--ink-faint); font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; padding:0 0 6px; border-bottom:1px solid var(--line);}
+  tbody td{padding:7px 0; border-bottom:1px solid var(--line); color:var(--ink-soft);}
+  tbody tr:last-child td{border-bottom:none;}
+  td.time{white-space:nowrap; padding-right:14px; color:var(--ink);}
+  td.hash{width:100%;}
+
+  /* ---------- phone panel ---------- */
+  .phone-wrap{background:none; border:none; box-shadow:none; display:flex; justify-content:center; padding-top:4px;}
+  .phone{width:272px; background:var(--device-bezel); border-radius:38px; padding:12px; box-shadow:var(--shadow); position:relative;}
+  .screen{position:relative; background:var(--surface); border-radius:26px; overflow:hidden; min-height:520px; display:flex; flex-direction:column;}
+  .notch{position:absolute; top:12px; left:50%; transform:translateX(-50%); width:74px; height:18px; background:var(--device-bezel); border-radius:10px; z-index:5;}
+  .statusbar{display:flex; align-items:center; justify-content:space-between; padding:16px 20px 4px; font-family:"IBM Plex Mono"; font-size:12px; color:var(--ink);}
+  .statusbar .icons{display:flex; align-items:center; gap:5px;}
+  .sig{display:flex; align-items:flex-end; gap:2px; height:9px;}
+  .sig i{display:block; width:2.5px; background:var(--ink); border-radius:1px;}
+  .sig i:nth-child(1){height:3px} .sig i:nth-child(2){height:5px} .sig i:nth-child(3){height:7px} .sig i:nth-child(4){height:9px}
+  .batt{width:20px; height:10px; border:1px solid var(--ink); border-radius:2.5px; padding:1.5px; display:flex;}
+  .batt i{display:block; width:80%; background:var(--ink); border-radius:1px;}
+
+  .app{flex:1; display:flex; flex-direction:column; padding:6px 16px 16px;}
+  .app-head{display:flex; align-items:center; justify-content:space-between; padding:6px 2px 14px; font-family:Archivo; font-weight:800; font-size:14px;}
+
+  .ph-state{flex:1; display:flex; flex-direction:column;}
+  .ph-waiting{align-items:center; justify-content:center; text-align:center; gap:10px; color:var(--ink-faint); font-size:12.5px; padding:20px 10px;}
+  .ph-waiting .arrow{font-family:"IBM Plex Mono"; font-size:20px; color:var(--brand);}
+
+  .card{background:var(--surface-sunk); border-radius:14px; padding:14px;}
+  .ph-intro h2{font-size:19px; margin-bottom:8px;}
+  .ph-intro p{font-size:13px; color:var(--ink-soft); line-height:1.5;}
+  .ph-intro .session-line{margin-top:12px; font-size:11.5px; color:var(--ink-faint);}
+  .ph-intro .fine{margin-top:auto; padding-top:14px; font-size:11px; color:var(--ink-faint); line-height:1.5;}
+
+  .btn{display:block; width:100%; text-align:center; border:none; border-radius:12px; padding:13px; font-weight:600; font-size:13.5px; margin-top:12px;}
+  .btn-primary{background:var(--brand); color:var(--brand-ink);}
+  .btn-secondary{background:var(--surface-sunk); color:var(--ink);}
+  .btn-ghost{background:transparent; border:1px solid var(--line); color:var(--ink); border-radius:999px; padding:9px 15px; font-size:12.5px; font-weight:600;}
+  .btn-ghost:hover{border-color:var(--brand); color:var(--brand);}
+
+  .scrim{position:absolute; inset:0; background:var(--scrim); z-index:6;}
+  .sheet{position:absolute; left:0; right:0; bottom:0; z-index:7; background:var(--surface); border-radius:20px 20px 0 0; padding:10px 18px 18px; box-shadow:0 -10px 30px rgba(0,0,0,.18);}
+  .grabber{width:34px; height:4px; background:var(--line); border-radius:99px; margin:2px auto 12px;}
+  .sheet-title{text-align:center; font-weight:600; font-size:12.5px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.05em; margin-bottom:12px;}
+  .cred{background:linear-gradient(135deg,var(--brand),#232853); color:#fff; border-radius:12px; padding:13px 14px;}
+  .cred p{margin:0}
+  .cred .name{font-weight:600; font-size:13.5px;}
+  .cred .sub{font-size:11px; opacity:.85; margin-top:3px;}
+  .sheet-h{font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-faint); margin:13px 0 6px;}
+  .share-list{list-style:none; margin:0; padding:0;}
+  .share-list li{display:flex; justify-content:space-between; padding:7px 0; border-bottom:1px solid var(--line); font-size:12.5px;}
+  .share-list li:last-child{border-bottom:none;}
+  .share-list b{color:var(--verified); font-weight:700;}
+  .not-shared{font-size:11.5px; color:var(--ink-faint); line-height:1.5;}
+
+  .steps{list-style:none; margin:14px 0 0; padding:0; flex:1;}
+  .steps li{display:flex; align-items:center; gap:9px; padding:7px 0; font-size:12.5px; color:var(--ink-faint);}
+  .steps li .dot{width:15px; height:15px; border-radius:50%; border:1.5px solid var(--line); flex:none; display:flex; align-items:center; justify-content:center; font-size:9px;}
+  .steps li.done{color:var(--ink);}
+  .steps li.done .dot{background:var(--verified); border-color:var(--verified); color:var(--verified-ink);}
+  .steps li.active{color:var(--ink); font-weight:600;}
+  .steps li.active .dot{border-color:var(--pending);}
+  .prove-timer{margin-top:auto; text-align:center; font-size:22px; padding-top:10px;}
+
+  .ph-result{align-items:center; justify-content:center; text-align:center; gap:6px; padding:12px;}
+  .ph-result .result-icon{width:44px; height:44px; font-size:20px; margin-bottom:6px;}
+  .ph-result h2{font-size:19px;}
+  .ph-result p{font-size:12.5px; color:var(--ink-soft); line-height:1.5; margin-top:6px;}
+  .ph-result .meta{margin-top:10px; font-size:11px; color:var(--ink-faint);}
+
+  .home-indicator{width:100px; height:4px; background:var(--device-indicator); border-radius:99px; margin:10px auto 0;}
+
+  /* ---------- timeline ---------- */
+  .timeline{margin-top:34px;}
+  .timeline h2{font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-faint); font-family:"IBM Plex Sans"; font-weight:600; margin-bottom:14px;}
+  #steps-tl{list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(7,1fr); gap:0;}
+  #steps-tl li{position:relative; padding-top:22px; font-size:11.5px; color:var(--ink-faint); line-height:1.35; padding-right:8px;}
+  #steps-tl li::before{content:""; position:absolute; top:5px; left:0; width:100%; height:2px; background:var(--line);}
+  #steps-tl li::after{content:""; position:absolute; top:1px; left:0; width:10px; height:10px; border-radius:50%; background:var(--surface); border:2px solid var(--line);}
+  #steps-tl li.done{color:var(--ink);}
+  #steps-tl li.done::before{background:var(--verified);}
+  #steps-tl li.done::after{border-color:var(--verified); background:var(--verified);}
+  #steps-tl li.active{color:var(--ink); font-weight:600;}
+  #steps-tl li.active::after{border-color:var(--pending); background:var(--pending);}
+  #steps-tl li.failed{color:var(--denied);}
+  #steps-tl li.failed::before{background:var(--denied);}
+  #steps-tl li.failed::after{border-color:var(--denied); background:var(--denied);}
+  @media (max-width:760px){ #steps-tl{grid-template-columns:repeat(2,1fr); row-gap:20px;} }
+
+  /* ---------- controls ---------- */
+  .controls{display:flex; flex-wrap:wrap; gap:10px; margin-top:26px;}
+
+  /* ---------- legend ---------- */
+  .legend{margin-top:40px; padding-top:22px; border-top:1px solid var(--line);}
+  .legend h2{font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-faint); font-family:"IBM Plex Sans"; font-weight:600; margin-bottom:14px;}
+  .legend dl{display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin:0;}
+  @media (max-width:700px){ .legend dl{grid-template-columns:1fr;} }
+  .legend dt{font-weight:600; font-size:13px; margin-bottom:4px;}
+  .legend dd{margin:0; font-size:12.5px; color:var(--ink-soft); line-height:1.55;}
+  .fine{margin-top:18px; font-size:11.5px; color:var(--ink-faint); line-height:1.6; max-width:70ch;}
+
+  @media (prefers-reduced-motion:no-preference){
+    .sheet:not([hidden]) .sheet-card{animation:sheetIn .32s cubic-bezier(.2,.8,.2,1);}
+    .scrim:not([hidden]){animation:fadeIn .25s ease;}
+    #steps-tl li.active::after{animation:pulse 1.6s ease-in-out infinite;}
+    @keyframes sheetIn{from{transform:translateY(16px); opacity:0} to{transform:translateY(0); opacity:1}}
+    @keyframes fadeIn{from{opacity:0} to{opacity:1}}
+    @keyframes pulse{0%,100%{box-shadow:0 0 0 0 var(--pending-soft)} 50%{box-shadow:0 0 0 5px var(--pending-soft)}}
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="masthead">
+    <div class="brand"><span class="brand-dot" aria-hidden="true"></span>Nothing to Steal</div>
+    <span class="pill pill-demo">Demo · simulated flow</span>
+  </header>
+
+  <section class="intro-copy">
+    <h1>How a check works</h1>
+    <p>An experiment, built after the September 2026 driver's license breach, to show how little it takes to protect people at the door. A bar needs one answer: over 21 or not.</p>
+    <p>Nothing here is invented. It runs on the identity standards DMVs already issue to: the ISO/IEC 18013-5 mobile driver's license, checked against a DMV issuer trust list, with an open-source zero-knowledge proof on top.</p>
+    <p>Below: the venue desk and the guest's phone, using the prototype's real flow, copy and timing. Nothing on this page is a real device, wallet or proof.</p>
+  </section>
+
+  <ol class="guide">
+    <li><span class="guide-num">1</span>Tap the code on the desk</li>
+    <li><span class="guide-num">2</span>Share age on the phone</li>
+    <li><span class="guide-num">3</span>Confirm with Face&nbsp;ID</li>
+  </ol>
+
+  <main class="stage">
+    <section class="panel desk" aria-label="Venue desk screen">
+      <div class="desk-head">
+        <span class="brand"><span class="brand-dot" aria-hidden="true"></span>Desk</span>
+        <span class="pill pill-demo">Level 2 · simulated</span>
+      </div>
+
+      <div class="state-block" id="stateBlock" data-status="waiting" aria-live="polite">
+        <div class="state-word" id="stateWord">WAITING</div>
+        <p class="state-sub" id="stateSub">Scan to prove you're over 21.</p>
+
+        <div class="qr-zone" id="qrZone">
+          <button type="button" class="qr-btn" id="qrBtn" aria-label="Simulate a guest scanning this code with their phone">
+            <canvas id="qrCanvas" width="150" height="150"></canvas>
+          </button>
+          <p class="qr-caption" id="qrCaption">Tap the code to simulate a scan</p>
+          <div class="ttl-badge"><span>Session expires in</span><b class="mono" id="ttlNum">60s</b></div>
+        </div>
+
+        <div class="result-zone" id="resultZone" hidden>
+          <div class="result-icon" id="resultIcon">✓</div>
+          <p class="state-sub" id="resultSub"></p>
+        </div>
+      </div>
+
+      <div class="db">
+        <div class="db-head">
+          <h3>Venue database</h3>
+          <span>2 fields per row</span>
+        </div>
+        <table>
+          <thead><tr><th>Time</th><th>Proof hash</th></tr></thead>
+          <tbody id="logRows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel phone-wrap" aria-label="Guest phone" style="border:none;box-shadow:none;background:none;">
+      <div class="phone">
+        <div class="notch" aria-hidden="true"></div>
+        <div class="screen">
+          <div class="statusbar">
+            <span class="mono">9:41</span>
+            <span class="icons">
+              <span class="sig" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+              <span class="batt" aria-hidden="true"><i></i></span>
+            </span>
+          </div>
+          <div class="app">
+            <div class="app-head">Nothing to Steal <span class="pill pill-demo small">DEMO</span></div>
+
+            <div class="ph-state ph-waiting" id="phWaiting" aria-live="polite">
+              <span class="arrow" aria-hidden="true">←</span>
+              <p>Waiting for the desk code to be scanned</p>
+            </div>
+
+            <div class="ph-state ph-intro" id="phIntro" hidden>
+              <div class="card" style="flex:1;">
+                <h2>Prove you're over 21</h2>
+                <p>The venue learns three facts: over 21, license valid, issued by a trusted DMV. Nothing else leaves your phone.</p>
+                <p class="session-line mono" id="introSession">Session valid for 60s</p>
+              </div>
+              <button type="button" class="btn btn-primary" id="btnShare">Share with the venue</button>
+              <p class="fine">Demo credential — a real license needs a wallet hand-off that isn't wired in yet.</p>
+            </div>
+
+            <div class="ph-state ph-proving" id="phProving" hidden>
+              <p class="sheet-h" style="margin-top:4px;">Proving on this device</p>
+              <ol class="steps" id="provingSteps">
+                <li data-i="0"><span class="dot"></span>Loading prover</li>
+                <li data-i="1"><span class="dot"></span>Signing session with the device key</li>
+                <li data-i="2"><span class="dot"></span>Proving on this device</li>
+                <li data-i="3"><span class="dot"></span>Uploading proof</li>
+                <li data-i="4"><span class="dot"></span>Wiping credential from this page</li>
+              </ol>
+              <div class="prove-timer mono" id="proveTimer">0.0s</div>
+            </div>
+
+            <div class="ph-state ph-result" id="phResult" hidden aria-live="polite">
+              <div class="result-icon" id="phResultIcon">✓</div>
+              <h2 id="phResultHead">Accepted</h2>
+              <p id="phResultSub"></p>
+              <p class="meta mono" id="phResultMeta"></p>
+            </div>
+          </div>
+
+          <div class="scrim" id="scrim" hidden></div>
+          <div class="sheet" id="sheet" hidden>
+            <div class="sheet-card">
+              <div class="grabber" aria-hidden="true"></div>
+              <p class="sheet-title">Test Wallet</p>
+              <div class="cred">
+                <p class="name">Test DMV · Driver's License</p>
+                <p class="sub">TEST Document Signer · valid until 2031-09-02</p>
+              </div>
+              <p class="sheet-h">This venue will learn</p>
+              <ul class="share-list">
+                <li>Over 21 <b>✓</b></li>
+                <li>License currently valid <b>✓</b></li>
+                <li>Signed by a DMV on the trust list <b>✓</b></li>
+              </ul>
+              <p class="sheet-h">Not shared</p>
+              <p class="not-shared">Name, date of birth, address, photo, license number. The proof is made on this phone.</p>
+              <button type="button" class="btn btn-primary" id="btnContinue">Continue with Face ID (simulated)</button>
+              <button type="button" class="btn btn-secondary" id="btnCancel">Cancel</button>
+            </div>
+          </div>
+        </div>
+        <div class="home-indicator" aria-hidden="true"></div>
+      </div>
+    </section>
+  </main>
+
+  <section class="timeline">
+    <h2>What just happened, step by step</h2>
+    <ol id="steps-tl">
+      <li data-i="1">QR scanned</li>
+      <li data-i="2">Age shared from wallet</li>
+      <li data-i="3">Device signs the session</li>
+      <li data-i="4">Proof generated on phone</li>
+      <li data-i="5">Issuer checked against trust root</li>
+      <li data-i="6">Proof cryptographically verified</li>
+      <li data-i="7">Result logged (hash only)</li>
+    </ol>
+  </section>
+
+  <div class="controls">
+    <button type="button" class="btn-ghost" id="btnReset">↻ Reset demo</button>
+    <button type="button" class="btn-ghost" id="btnDecline">See a declined check (fast-forwarded)</button>
+  </div>
+
+  <footer class="legend">
+    <h2>What's real in the shipped prototype</h2>
+    <dl>
+      <div><dt>Proof</dt><dd>A real longfellow-zk zero-knowledge proof, generated in the guest's browser in roughly 2 to 8 seconds depending on the phone.</dd></div>
+      <div><dt>Storage</dt><dd>Exactly two fields per check: a timestamp and a proof hash. No name, photo, or license number, ever.</dd></div>
+      <div><dt>Wallet</dt><dd>Simulated on this page. The real Apple and Google hand-off needs a relying-party registration that isn't wired in yet.</dd></div>
+    </dl>
+    <p class="fine">Simulated walkthrough. No credential, network call or cryptography on this page is real. The prototype's code, measured numbers and honest status are on <a href="https://github.com/Redoudou/upgraded-broccoli-zkid">GitHub</a>. Personal experiment, not a product. Apache-2.0.</p>
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var $ = function(id){ return document.getElementById(id); };
+
+  var els = {
+    stateBlock: $("stateBlock"), stateWord: $("stateWord"), stateSub: $("stateSub"),
+    qrZone: $("qrZone"), qrBtn: $("qrBtn"), qrCanvas: $("qrCanvas"), qrCaption: $("qrCaption"), ttlNum: $("ttlNum"),
+    resultZone: $("resultZone"), resultIcon: $("resultIcon"), resultSub: $("resultSub"),
+    logRows: $("logRows"),
+    phWaiting: $("phWaiting"), phIntro: $("phIntro"), phProving: $("phProving"), phResult: $("phResult"),
+    introSession: $("introSession"),
+    provingSteps: $("provingSteps"), proveTimer: $("proveTimer"),
+    phResultIcon: $("phResultIcon"), phResultHead: $("phResultHead"), phResultSub: $("phResultSub"), phResultMeta: $("phResultMeta"),
+    scrim: $("scrim"), sheet: $("sheet"),
+    btnShare: $("btnShare"), btnContinue: $("btnContinue"), btnCancel: $("btnCancel"),
+    btnReset: $("btnReset"), btnDecline: $("btnDecline"),
+    tl: $("steps-tl")
+  };
+  var tlItems = els.tl.querySelectorAll("li");
+
+  var PROVE_STEPS = [700, 650, 950, 620, 560];
+
+  var phase = "idle";           // idle | intro | sheet | proving | verifying | result-green | result-red
+  var ttl = 60;
+  var activeStep = 0;           // 0..7 on the 7-step timeline
+  var failedAtStep = null;
+  var provingStep = -1;
+  var proveStart = 0;
+  var proveSeconds = "0.0";
+  var failReason = "";
+  var logs = [
+    { time: "09:14:02", hash: hex(8) + "…" + hex(6) },
+    { time: "09:07:41", hash: hex(8) + "…" + hex(6) }
+  ];
+  var nonce = "";
+  var pending = [];
+  var ttlInterval = null;
+  var proveTimerInterval = null;
+
+  function hex(n){
+    var s = "";
+    for (var i = 0; i < n; i++) s += Math.floor(Math.random() * 16).toString(16);
+    return s;
+  }
+  function pad2(n){ return n < 10 ? "0" + n : "" + n; }
+  function nowStamp(){
+    var d = new Date();
+    return pad2(d.getHours()) + ":" + pad2(d.getMinutes()) + ":" + pad2(d.getSeconds());
+  }
+  function after(fn, ms){ var id = setTimeout(fn, ms); pending.push(id); return id; }
+  function clearPending(){ pending.forEach(clearTimeout); pending = []; }
+
+  /* ---------- pseudo-QR ---------- */
+  function mulberry32(a){
+    return function(){
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      var t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  function seedFromString(s){
+    var h = 0;
+    for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+    return h >>> 0;
+  }
+  function cssVar(name){
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+  function inFinder(r, c, n){
+    var blocks = [[0,0],[0,n-7],[n-7,0]];
+    for (var b = 0; b < blocks.length; b++){
+      var br = blocks[b][0], bc = blocks[b][1];
+      if (r >= br && r < br + 7 && c >= bc && c < bc + 7){
+        var lr = r - br, lc = c - bc;
+        return (lr === 0 || lr === 6 || lc === 0 || lc === 6) || (lr >= 2 && lr <= 4 && lc >= 2 && lc <= 4);
+      }
+    }
+    return null;
+  }
+  function drawQR(seedStr){
+    var canvas = els.qrCanvas;
+    var dpr = window.devicePixelRatio || 1;
+    var size = 150;
+    canvas.width = size * dpr; canvas.height = size * dpr;
+    var ctx = canvas.getContext("2d");
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    var ink = cssVar("--ink") || "#12141A";
+    var surface = cssVar("--surface") || "#FFFFFF";
+    ctx.fillStyle = surface; ctx.fillRect(0, 0, size, size);
+    var n = 21, margin = 8, avail = size - margin * 2, cell = avail / n;
+    var rand = mulberry32(seedFromString(seedStr));
+    for (var r = 0; r < n; r++){
+      for (var c = 0; c < n; c++){
+        var f = inFinder(r, c, n);
+        var on;
+        if (f !== null) on = f;
+        else if (r === 6 || c === 6) on = (r + c) % 2 === 0;
+        else on = rand() < 0.46;
+        ctx.fillStyle = on ? ink : surface;
+        ctx.fillRect(margin + c * cell, margin + r * cell, cell + 0.6, cell + 0.6);
+      }
+    }
+  }
+  window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").addEventListener &&
+    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function(){ drawQR(nonce); });
+
+  /* ---------- countdown ---------- */
+  function startCountdown(){
+    if (ttlInterval) clearInterval(ttlInterval);
+    ttlInterval = setInterval(tick, 1000);
+  }
+  function tick(){
+    if (phase === "result-green" || phase === "result-red") return;
+    if (phase === "proving" || phase === "verifying") return;
+    ttl = Math.max(0, ttl - 1);
+    if (ttl <= 0){
+      if (phase === "idle"){ newSession(); return; }
+      if (phase === "intro" || phase === "sheet"){ expireSession(); return; }
+    }
+    render();
+  }
+
+  /* ---------- session lifecycle ---------- */
+  function newSession(){
+    clearPending();
+    phase = "idle"; ttl = 60; activeStep = 0; failedAtStep = null; provingStep = -1;
+    nonce = hex(16);
+    drawQR(nonce);
+    startCountdown();
+    render();
+  }
+  function expireSession(){
+    clearPending();
+    if (ttlInterval) clearInterval(ttlInterval);
+    phase = "result-red"; failReason = "expired"; failedAtStep = 2;
+    render();
+    after(function(){ newSession(); }, 6000);
+  }
+
+  /* ---------- guest actions ---------- */
+  function scanQr(){
+    if (phase !== "idle") return;
+    phase = "intro"; activeStep = 2; render();
+  }
+  function shareWithVenue(){
+    if (phase !== "intro") return;
+    phase = "sheet"; render();
+  }
+  function cancelSheet(){
+    if (phase !== "sheet") return;
+    phase = "intro"; render();
+  }
+  function continueFaceId(){
+    if (phase !== "sheet") return;
+    clearPending();
+    phase = "proving"; provingStep = -1; activeStep = 3; proveStart = Date.now();
+    render();
+    proveTimerInterval = setInterval(function(){
+      var s = ((Date.now() - proveStart) / 1000).toFixed(1);
+      els.proveTimer.textContent = s + "s";
+    }, 100);
+    runProving(0);
+  }
+  function runProving(i){
+    if (i >= PROVE_STEPS.length){ finishProving(); return; }
+    provingStep = i;
+    if (i >= 2) activeStep = 4;
+    render();
+    after(function(){ runProving(i + 1); }, PROVE_STEPS[i]);
+  }
+  function finishProving(){
+    if (proveTimerInterval) clearInterval(proveTimerInterval);
+    proveSeconds = ((Date.now() - proveStart) / 1000).toFixed(1);
+    phase = "verifying"; activeStep = 5; render();
+    after(function(){
+      activeStep = 6; render();
+      after(finishVerifying, 450);
+    }, 450);
+  }
+  function finishVerifying(){
+    phase = "result-green"; activeStep = 7; render();
+    logs.unshift({ time: nowStamp(), hash: hex(8) + "…" + hex(6) });
+    if (logs.length > 4) logs.length = 4;
+    renderLogs();
+    after(function(){ newSession(); }, 6000);
+  }
+  function forceDecline(){
+    if (phase === "proving" || phase === "verifying") return;
+    if (phase === "result-green" || phase === "result-red") newSession();
+    clearPending();
+    phase = "intro"; ttl = 3; activeStep = 2; render();
+  }
+  function resetDemo(){
+    clearPending();
+    if (proveTimerInterval) clearInterval(proveTimerInterval);
+    newSession();
+  }
+
+  /* ---------- render ---------- */
+  var STATUS_COPY = {
+    idle: { word: "WAITING", sub: "Scan to prove you're over 21.", status: "waiting" },
+    intro: { word: "WAITING", sub: "A guest is checking in on their phone.", status: "waiting" },
+    sheet: { word: "WAITING", sub: "A guest is checking in on their phone.", status: "waiting" },
+    proving: { word: "WAITING", sub: "Proof is being generated on the guest's phone.", status: "waiting" },
+    verifying: { word: "VERIFYING", sub: "Checking the issuer against the trust root, then the proof itself.", status: "verifying" }
+  };
+  var QR_CAPTION = {
+    idle: "Tap the code to simulate a scan",
+    intro: "A guest is already checking in",
+    sheet: "A guest is already checking in",
+    proving: "Proof in progress",
+    verifying: "Verifying the proof"
+  };
+
+  function render(){
+    var inFlow = STATUS_COPY[phase];
+    if (inFlow){
+      els.stateBlock.dataset.status = inFlow.status;
+      els.stateWord.textContent = inFlow.word;
+      els.stateSub.textContent = inFlow.sub;
+      els.qrZone.hidden = false;
+      els.resultZone.hidden = true;
+      els.qrBtn.disabled = phase !== "idle";
+      els.qrCaption.textContent = QR_CAPTION[phase];
+      els.ttlNum.textContent = ttl + "s";
+    } else {
+      var ok = phase === "result-green";
+      els.stateBlock.dataset.status = ok ? "verified" : "declined";
+      els.stateWord.textContent = ok ? "VERIFIED" : "NOT ACCEPTED";
+      els.stateSub.textContent = "";
+      els.qrZone.hidden = true;
+      els.resultZone.hidden = false;
+      els.resultIcon.textContent = ok ? "✓" : "✕";
+      els.resultSub.textContent = ok
+        ? "Over 21 · License valid · Issued by a trusted DMV. Nothing else was learned."
+        : "This code expired before a proof arrived. A new one is ready in a moment.";
+    }
+
+    els.phWaiting.hidden = phase !== "idle";
+    els.phIntro.hidden = !(phase === "intro" || phase === "sheet");
+    els.phProving.hidden = !(phase === "proving" || phase === "verifying");
+    els.phResult.hidden = !(phase === "result-green" || phase === "result-red");
+    els.scrim.hidden = phase !== "sheet";
+    els.sheet.hidden = phase !== "sheet";
+    if (phase === "intro" || phase === "sheet") els.introSession.textContent = "Session valid for " + ttl + "s";
+
+    if (phase === "proving" || phase === "verifying"){
+      var lis = els.provingSteps.querySelectorAll("li");
+      lis.forEach(function(li){
+        var i = Number(li.dataset.i);
+        li.classList.toggle("done", phase === "verifying" || i < provingStep);
+        li.classList.toggle("active", phase === "proving" && i === provingStep);
+      });
+    }
+
+    if (phase === "result-green" || phase === "result-red"){
+      var ok2 = phase === "result-green";
+      els.phResultIcon.textContent = ok2 ? "✓" : "✕";
+      els.phResultIcon.style.background = ok2 ? "var(--verified)" : "var(--denied)";
+      els.phResultIcon.style.color = ok2 ? "var(--verified-ink)" : "var(--denied-ink)";
+      els.phResultHead.textContent = ok2 ? "Accepted" : "Not accepted";
+      els.phResultSub.textContent = ok2
+        ? "The desk is green. It learned you're over 21 with a valid license from a trusted DMV — nothing else."
+        : "Reason: session_expired. Ask the desk for a fresh code — sessions last 60 seconds and are single use.";
+      els.phResultMeta.textContent = ok2 ? "Proof generated in " + proveSeconds + "s · 336 KB · credential wiped." : "";
+    }
+
+    tlItems.forEach(function(li){
+      var i = Number(li.dataset.i);
+      li.classList.remove("done", "active", "failed");
+      if (failedAtStep !== null && (phase === "result-red")){
+        if (i < failedAtStep) li.classList.add("done");
+        else if (i === failedAtStep) li.classList.add("failed");
+      } else {
+        if (i < activeStep) li.classList.add("done");
+        else if (i === activeStep) li.classList.add("active");
+      }
+    });
+  }
+  function renderLogs(){
+    els.logRows.innerHTML = logs.map(function(row){
+      return '<tr><td class="time mono">' + row.time + '</td><td class="hash mono">' + row.hash + "</td></tr>";
+    }).join("");
+  }
+
+  els.qrBtn.addEventListener("click", scanQr);
+  els.btnShare.addEventListener("click", shareWithVenue);
+  els.btnContinue.addEventListener("click", continueFaceId);
+  els.btnCancel.addEventListener("click", cancelSheet);
+  els.btnReset.addEventListener("click", resetDemo);
+  els.btnDecline.addEventListener("click", forceDecline);
+
+  renderLogs();
+  newSession();
+})();
+</script>
+
+</body></html>
