@@ -6,6 +6,16 @@ Zero-knowledge proof of a US driver's license, generated on the guest's phone, a
 
 **See it without installing anything:** [interactive walkthrough](https://claude.ai/code/artifact/c9ee1a2c-687a-4364-84d0-a1cd5aee2610) — a fictional, simulated front end of the desk screen and the guest's phone, built from this prototype's real copy and timing. Useful for partner and venue conversations; not a substitute for `make demo`.
 
+## Why this exists
+
+On August 31, 2026 a dark-web service began selling scans of more than 153 million US and Canadian driver's licenses: front and back, photo and signature, some under infrared and UV, each stamped with the day the owner rented a car, checked into a hotel or bought cannabis. KrebsOnSecurity traced the images to a single identity-verification vendor whose scanners sit at those counters. The FBI opened an inquiry the same day. ([Krebs, 2026-09-01](https://krebsonsecurity.com/2026/09/fbi-probes-service-selling-153m-drivers-licenses/) · [our line-by-line check](docs/components/breach-context.md))
+
+That was not a bug. It was the business model. A venue needs one bit — over 21, license valid — and the only tool it is sold collects the whole document and stores it with a vendor. Compliance built the honeypot.
+
+Green Light answers the bit without the document. The phone proves "over 21, valid, issued by a real DMV" from the mobile driver's license already in Apple or Google Wallet; the venue stores a timestamp and a proof hash. The cryptography already existed — Google's longfellow-zk, the Ethereum Foundation's Mopro and zkID work, the W3C Digital Credentials API — built separately, with no US deployment and nobody convening the DMVs, wallets, verifier vendors and venues. This repo is the assembly, the audit trail and the pilot plan. [SPEC.md §0](SPEC.md#0-context--why-this-why-now) has the full account.
+
+![One check, end to end](docs/diagrams/fig2-sequence.png)
+
 ## Test it in five minutes
 
 Needs Node 24 (22 works) and openssl. No Rust, no Docker, no phone required; a phone on the same Wi-Fi makes it real.
