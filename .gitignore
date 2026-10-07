@@ -1,8 +1,25 @@
 node_modules/
 dist/
 *.log
+
+# Secrets. Patterns are recursive on purpose: "fixtures/*.key" matched only the
+# top level, so a key dropped in fixtures/certs/ would have been committed.
 .env
-fixtures/*.key
+.env.*
+**/*.key
+**/*.p12
+**/*.pfx
+**/*.jks
+**/*.keystore
+**/*.ppk
+id_rsa
+id_ecdsa
+id_ed25519
+
+# Certificates are public by design and the test DMV's cert is committed, so
+# .pem is not ignored. scripts/secret-scan.sh rejects any .pem that turns out
+# to contain a private key.
+
 fixtures/*.cbor
 bench/results/*.json
 .DS_Store
